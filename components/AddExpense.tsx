@@ -56,8 +56,7 @@ export const AddExpense: React.FC<AddExpenseProps> = ({ members, groups, activeG
     setAiError('');
 
     try {
-        // Fix: Provide fallback string for API key to satisfy TypeScript strict null checks
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
         
         // Create a context string for the AI to match names to IDs
         const membersContext = members.map(m => `Name: "${m.name}", ID: "${m.id}"`).join("; ");
