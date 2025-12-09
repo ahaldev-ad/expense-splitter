@@ -6,9 +6,9 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     define: {
-      // Polyfill process.env.API_KEY for the browser
-      'process.env.API_KEY': JSON.stringify(env.API_KEY),
-      // Polyfill process.env to prevent crashes in third-party libs
+      // Ensure we always pass a string, even if the env var is missing
+      'process.env.API_KEY': JSON.stringify(env.API_KEY || ''),
+      // Polyfill process.env to prevent crashes
       'process.env': {}
     }
   };
