@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card } from './Card';
-import { DollarSign, ArrowRight, Banknote } from 'lucide-react';
+import { IndianRupee, ArrowRight, Banknote } from 'lucide-react';
 
 export const SettleUp = ({ members, onSettleUp }) => {
   const [payerId, setPayerId] = useState('');
@@ -85,7 +85,7 @@ export const SettleUp = ({ members, onSettleUp }) => {
             <label className="text-xs font-semibold uppercase tracking-wider text-olive-700">Amount</label>
             <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-olive-500">
-                <DollarSign size={18} />
+                <IndianRupee size={18} />
                 </span>
                 <input
                 type="number"

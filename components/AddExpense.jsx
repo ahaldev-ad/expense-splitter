@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from './Card';
-import { Check, DollarSign, Sparkles, Loader2, Layers } from 'lucide-react';
+import { Check, IndianRupee, Sparkles, Loader2, Layers } from 'lucide-react';
 import { GoogleGenAI, Type } from "@google/genai";
 
 export const AddExpense = ({ members, groups, activeGroupId, onAddExpense }) => {
@@ -152,7 +152,7 @@ export const AddExpense = ({ members, groups, activeGroupId, onAddExpense }) => 
                 value={smartInput}
                 onChange={(e) => setSmartInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleSmartFill(); }}
-                placeholder="e.g. Dinner $55 paid by Alex for everyone"
+                placeholder="e.g. Dinner ₹55 paid by Alex for everyone"
                 className="flex-1 px-3 py-2 bg-white border border-olive-300 rounded-lg focus:ring-2 focus:ring-olive-600 focus:outline-none placeholder-olive-400 text-olive-900 text-sm shadow-sm"
             />
             <button 
@@ -217,7 +217,7 @@ export const AddExpense = ({ members, groups, activeGroupId, onAddExpense }) => 
             <label className="text-xs font-semibold uppercase tracking-wider text-olive-700">Amount</label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-olive-500">
-                <DollarSign size={16} />
+                <IndianRupee size={16} />
               </span>
               <input
                 type="number"
