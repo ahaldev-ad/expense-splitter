@@ -7,7 +7,8 @@ import { SettleUp } from './components/SettleUp';
 import { ExpenseList } from './components/ExpenseList';
 import { SettlementPlan } from './components/SettlementPlan';
 import { GroupSelector } from './components/GroupSelector';
-import { LayoutGrid, Users, BarChart3, History, PlusCircle, Banknote, LogOut, Home, Loader2, ArrowRight, Lock, KeyRound, AlertCircle, Hash, Trash2, AlertTriangle } from 'lucide-react';
+import { Reports } from './components/Reports';
+import { LayoutGrid, Users, BarChart3, History, PlusCircle, Banknote, LogOut, Home, Loader2, ArrowRight, Lock, KeyRound, AlertCircle, Hash, Trash2, AlertTriangle, FileText } from 'lucide-react';
 
 // Firebase Imports
 import { db } from './firebase';
@@ -359,8 +360,8 @@ const App = () => {
       `}
     >
       <Icon size={16} className={activeTab === id ? 'text-olive-800' : 'text-olive-500'} />
-      <span className="hidden sm:inline">{label}</span>
-      <span className="sm:hidden text-xs">{label.split(' ')[0]}</span>
+      <span className="hidden lg:inline">{label}</span>
+      <span className="lg:hidden text-xs">{label.split(' ')[0]}</span>
     </button>
   );
 
@@ -599,6 +600,7 @@ const App = () => {
                 <TabButton id="add_expense" label="Add Expense" icon={PlusCircle} />
                 <TabButton id="settle_up" label="Settle Up" icon={Banknote} />
                 <TabButton id="history" label="History" icon={History} />
+                <TabButton id="reports" label="Reports" icon={FileText} />
                 <TabButton id="roommates" label="People" icon={Users} />
             </nav>
         </div>
@@ -654,6 +656,17 @@ const App = () => {
                 </div>
                 )}
 
+                {/* Reports Tab */}
+                {activeTab === 'reports' && (
+                <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <Reports 
+                        expenses={expenses} 
+                        members={members}
+                        groups={displayGroups}
+                    />
+                </div>
+                )}
+
                 {/* Roommates Tab */}
                 {activeTab === 'roommates' && (
                 <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -672,11 +685,12 @@ const App = () => {
 
       {/* Mobile Bottom Navigation (Visible only on Mobile) */}
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-olive-200 z-50 pb-safe">
-        <div className="grid grid-cols-5 h-16 max-w-md mx-auto">
+        <div className="grid grid-cols-6 h-16 max-w-md mx-auto">
             <MobileTabButton id="dashboard" label="Home" icon={BarChart3} />
             <MobileTabButton id="history" label="History" icon={History} />
             <MobileTabButton id="add_expense" label="Add" icon={PlusCircle} />
             <MobileTabButton id="settle_up" label="Settle" icon={Banknote} />
+            <MobileTabButton id="reports" label="Reports" icon={FileText} />
             <MobileTabButton id="roommates" label="People" icon={Users} />
         </div>
       </nav>
