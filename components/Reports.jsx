@@ -1,7 +1,10 @@
+
 import React, { useState, useMemo } from 'react';
 import { Card } from './Card';
 import { formatCurrency } from '../utils';
-import { FileText, Download, Calendar, PieChart, TrendingUp, Filter, ArrowRight } from 'lucide-react';
+import { FileText, Download, Calendar, PieChart, TrendingUp, FileDown } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 export const Reports = ({ expenses, members, groups }) => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -25,7 +28,7 @@ export const Reports = ({ expenses, members, groups }) => {
       const yearMatch = date.getFullYear() === selectedYear;
       const monthMatch = reportType === 'annual' || date.getMonth() === selectedMonth;
       return yearMatch && monthMatch && e.type !== 'settlement';
-    });
+    }).sort((a, b) => b.date - a.date);
   }, [expenses, selectedYear, selectedMonth, reportType]);
 
   const stats = useMemo(() => {
@@ -35,11 +38,9 @@ export const Reports = ({ expenses, members, groups }) => {
     const memberContribution = {};
 
     filteredExpenses.forEach(e => {
-      // Group breakdown
       const gName = groups.find(g => g.id === e.groupId)?.name || 'General';
       groupBreakdown[gName] = (groupBreakdown[gName] || 0) + e.amount;
       
-      // Member breakdown (who paid)
       const mName = members.find(m => m.id === e.payerId)?.name || 'Unknown';
       memberContribution[mName] = (memberContribution[mName] || 0) + e.amount;
     });
@@ -50,32 +51,66 @@ export const Reports = ({ expenses, members, groups }) => {
     return { total, groupBreakdown, memberContribution, topGroup, topPayer };
   }, [filteredExpenses, groups, members]);
 
-  const handleDownloadCSV = () => {
-    const headers = ['Date', 'Description', 'Payer', 'Group', 'Amount'];
-    const rows = filteredExpenses.map(e => [
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF();
+    const period = reportType === 'monthly' ? `${monthNames[selectedMonth]} ${selectedYear}` : `Year ${selectedYear}`;
+    
+    // Header
+    doc.setFontSize(22);
+    doc.setTextColor(40, 60, 30); // Deep forest color
+    doc.text('Expense Report', 14, 20);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(100);
+    doc.text(`Period: ${period}`, 14, 28);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 34);
+
+    // Summary Section
+    doc.setDrawColor(200);
+    doc.line(14, 40, 196, 40);
+    
+    doc.setFontSize(14);
+    doc.setTextColor(40, 60, 30);
+    doc.text('Summary Metrics', 14, 50);
+
+    doc.setFontSize(11);
+    doc.setTextColor(50);
+    doc.text(`Total Spending:`, 14, 60);
+    doc.setFont(undefined, 'bold');
+    doc.text(`${formatCurrency(stats.total)}`, 60, 60);
+    doc.setFont(undefined, 'normal');
+
+    doc.text(`Top Category:`, 14, 68);
+    doc.setFont(undefined, 'bold');
+    doc.text(`${stats.topGroup ? stats.topGroup[0] : 'N/A'} (${stats.topGroup ? formatCurrency(stats.topGroup[1]) : '$0'})`, 60, 68);
+    doc.setFont(undefined, 'normal');
+
+    doc.text(`Major Payer:`, 14, 76);
+    doc.setFont(undefined, 'bold');
+    doc.text(`${stats.topPayer ? stats.topPayer[0] : 'N/A'} (${stats.topPayer ? formatCurrency(stats.topPayer[1]) : '$0'})`, 60, 76);
+    doc.setFont(undefined, 'normal');
+
+    // Transactions Table
+    const tableData = filteredExpenses.map(e => [
       new Date(e.date).toLocaleDateString(),
-      `"${e.title.replace(/"/g, '""')}"`,
+      e.title,
       members.find(m => m.id === e.payerId)?.name || 'Unknown',
       groups.find(g => g.id === e.groupId)?.name || 'General',
-      e.amount.toFixed(2)
+      { content: formatCurrency(e.amount), styles: { halign: 'right' } }
     ]);
 
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(r => r.join(','))
-    ].join('\n');
+    doc.autoTable({
+      startY: 85,
+      head: [['Date', 'Description', 'Payer', 'Group', 'Amount']],
+      body: tableData,
+      headStyles: { fillColor: [40, 60, 30], textColor: [255, 255, 255] },
+      alternateRowStyles: { fillColor: [245, 247, 242] },
+      margin: { top: 85 },
+      theme: 'striped'
+    });
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    const filename = `Expenses_${reportType}_${selectedYear}${reportType === 'monthly' ? '_' + monthNames[selectedMonth] : ''}.csv`;
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', filename);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const filename = `Report_${reportType}_${selectedYear}${reportType === 'monthly' ? '_' + monthNames[selectedMonth] : ''}.pdf`;
+    doc.save(filename);
   };
 
   return (
@@ -125,12 +160,12 @@ export const Reports = ({ expenses, members, groups }) => {
           )}
 
           <button 
-            onClick={handleDownloadCSV}
+            onClick={handleDownloadPDF}
             disabled={filteredExpenses.length === 0}
             className="flex items-center gap-2 px-4 py-2.5 bg-olive-800 text-white rounded-lg text-sm font-bold shadow-md hover:bg-olive-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
           >
-            <Download size={16} />
-            <span>Export CSV</span>
+            <FileDown size={16} />
+            <span>Download PDF</span>
           </button>
         </div>
       </Card>
@@ -196,7 +231,7 @@ export const Reports = ({ expenses, members, groups }) => {
               </div>
             </Card>
 
-            <Card title="Quick Transaction Log">
+            <Card title="Latest Transactions (PDF Preview)">
               <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 no-scrollbar">
                 {filteredExpenses.slice(0, 10).map(e => (
                   <div key={e.id} className="flex items-center justify-between p-3 rounded-xl bg-olive-50/50 border border-olive-100/50">
@@ -211,7 +246,7 @@ export const Reports = ({ expenses, members, groups }) => {
                   </div>
                 ))}
                 {filteredExpenses.length > 10 && (
-                  <p className="text-center text-[10px] text-olive-400 italic pt-2">Showing latest 10 of {filteredExpenses.length} entries</p>
+                  <p className="text-center text-[10px] text-olive-400 italic pt-2">Download PDF to see full history ({filteredExpenses.length} total)</p>
                 )}
               </div>
             </Card>
