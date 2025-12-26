@@ -1,10 +1,9 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card } from './Card';
 import { formatCurrency } from '../utils';
 import { FileText, Download, Calendar, PieChart, TrendingUp, FileDown } from 'lucide-react';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 export const Reports = ({ expenses, members, groups }) => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -99,7 +98,7 @@ export const Reports = ({ expenses, members, groups }) => {
       { content: formatCurrency(e.amount), styles: { halign: 'right' } }
     ]);
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: 85,
       head: [['Date', 'Description', 'Payer', 'Group', 'Amount']],
       body: tableData,
